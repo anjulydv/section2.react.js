@@ -1,0 +1,10 @@
+.myclass{
+  color: red;
+  background-color: yellow;
+}
+
+.nav-item .active{
+  font-weight: bold;
+  border-bottom: 2px solid rgb(107, 20, 220);
+  color: rgb(107, 20, 220) !important;
+}
