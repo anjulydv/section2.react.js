@@ -1,13 +1,12 @@
 import { useFormik } from "formik";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
+const UpdateUser = () => {
+  const { id } = useParams();
 
-const Signup = () => {
   const navigate = useNavigate();
-
-  const [selImg, setSelImg] = useState("");
 
   const signupForm = useFormik({
     initialValues: {
@@ -17,13 +16,13 @@ const Signup = () => {
       age: "",
     },
     onSubmit: async (values, { resetForm, setSubmitting }) => {
-      values.avatar = selImg;
+      // values.avatar = selImg;
 
       console.log(values);
       setSubmitting(true);
 
-      const res = await fetch("http://localhost:5000/user/add", {
-        method: "POST",
+      const res = await fetch("http://localhost:5000/user/update/"+id, {
+        method: "PUT",
         body: JSON.stringify(values),
         headers: {
           "Content-Type": "application/json",
@@ -39,7 +38,7 @@ const Signup = () => {
           title: "WellDone!",
           text: "Registered Successfully 😎",
         });
-        navigate("/login");
+        navigate("/manageuser");
       } else {
         Swal.fire({
           icon: "error",
@@ -52,30 +51,13 @@ const Signup = () => {
     },
   });
 
-  const uploadFile = async (e) => {
-    if (!e.target.files[0]) return;
-    const file = e.target.files[0];
-    setSelImg(file.name);
-    const fd = new FormData();
-    fd.append("myfile", file);
-
-    const res = await fetch("http://localhost:5000/util/uploadfile", {
-      method: "POST",
-      body: fd,
-    });
-
-    console.log(res.status);
-
-    if (res.status === 200) {
-      console.log("File uploaded successfully");
-    } else {
-      console.log("File upload failed");
-    }
-  };
-
   return (
-  
-      <div className="w-25">
+    <div>
+      <h1>Update User</h1>
+      <hr />
+
+      <div className="container">
+        <h3>{id}</h3>
         <div className="card">
           <div className="card-body">
             <h3 className="text-center">Signup Form</h3>
@@ -130,7 +112,7 @@ const Signup = () => {
                 value={signupForm.values.age}
               />
 
-              <input type="file" onChange={uploadFile} />
+              {/* <input type="file" onChange={uploadFile} /> */}
 
               <button
                 disabled={signupForm.isSubmitting}
@@ -142,8 +124,8 @@ const Signup = () => {
           </div>
         </div>
       </div>
-    
+    </div>
   );
 };
 
-export default Signup;
+export default UpdateUser;

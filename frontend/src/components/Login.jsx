@@ -1,6 +1,78 @@
+import { useFormik } from 'formik';
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import * as Yup from 'yup';
+import useUserContext from '../UserContext';
+
+
+const LoginSchema = Yup.object().shape({
+  
+  email: Yup.string().email('Invalid email').required('Email is Required'),
+  password:Yup.string().required('Password is Required'),
+});
 
 const Login = () => {
+  const {setLoggedIn } = useUserContext();
+
+  const navigate = useNavigate( );
+
+  //Initialising fromik
+  const loginForm =useFormik( { 
+    initialValues:{
+      email :" ",
+      password:" "
+    },
+    onSubmit : async (  values, {resetForm} ) =>{ 
+      console.log(values);
+      // write code to submit form to server
+      const res= await fetch('http://localhost:5000/user/authenticate',{
+        method : 'POST',
+        body:JSON.stringify(values),
+        headers:{
+          'Content-Type' :'application/json'
+        }
+      })
+
+      console.log(res.status);
+
+      if(res.status == 200){
+        Swal.fire({
+          icon : 'success',
+          title : 'WellDone!',
+          text : 'Registered Successfully'
+        });
+        const data = await res.json();
+        sessionStorage.setItem('user', JSON.stringify(data));
+        setLoggedIn(true);
+        resetForm( );
+
+      }
+      else if(res.status === 401){
+        Swal.fire({
+          icon : 'error',
+          title : 'Error',
+          text : 'Email or Password is incorrect 😢'
+        });
+      }
+        
+      
+      
+      else{
+        Swal.fire({
+          icon :'error',
+          title :' Error',
+          text : 'Something went wrong'
+        })
+      }
+    },
+    validationSchema :LoginSchema
+  });
+  
+  
+
+
+
   return (
     <section className="vh-100" style={{ backgroundColor: "#9A616D" }}>
     <div className="container py-5 h-100">
@@ -18,7 +90,8 @@ const Login = () => {
               </div>
               <div className="col-md-6 col-lg-7 d-flex align-items-center">
                 <div className="card-body p-4 p-lg-5 text-black">
-                  <form>
+                  <form onSubmit={loginForm.handleSubmit}>
+                    
                     <h5
                       className="fw-normal mb-3 pb-3"
                       style={{ letterSpacing: 1 }}
@@ -28,27 +101,28 @@ const Login = () => {
                     <div className="form-outline mb-4">
                       <input
                         type="email"
-                        id="form2Example17"
-                        className="form-control form-control-lg"
+                        className="form-control form-control-lg" name="email" onChange={ loginForm.handleChange} value={ loginForm.values.email}
                       />
                       <label className="form-label" htmlFor="form2Example17">
                         Email address
                       </label>
+                      <span style={{ color:'red', fontSize:'0.7em',marginLeft:10}}>{loginForm.errors.email}</span>
                     </div>
                     <div className="form-outline mb-4">
                       <input
                         type="password"
-                        id="form2Example27"
-                        className="form-control form-control-lg"
+                        className="form-control form-control-lg" name="password" onChange={loginForm.handleChange} value={ loginForm.values.password}
                       />
                       <label className="form-label" htmlFor="form2Example27">
                         Password
                       </label>
+                      <span style={{ color:'red', fontSize:'0.7em',marginLeft:10}}>{loginForm.errors.password}</span>
+
                     </div>
                     <div className="pt-1 mb-4">
                       <button
                         className="btn btn-dark btn-lg btn-block"
-                        type="button"
+                        type="submit"
                       >
                         Login
                       </button>
